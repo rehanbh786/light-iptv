@@ -34,7 +34,6 @@ public final class Playlist {
     /** Channels that open in their official app instead of the built-in player. */
     public static final String APP_PREFIX = "app:";
     public static final String APP_ARY_YOUTUBE = "app:ary-youtube";
-    public static final String APP_TAMASHA = "app:tamasha";
 
     /** A category shown in the sidebar. */
     public static final class Category {
@@ -59,11 +58,10 @@ public final class Playlist {
 
     /** Official sources for channels whose free-list links don't work. */
     public static List<Channel> featured() {
+        // PTV Sports has no official stream that other apps may embed, so it is not here.
         return Arrays.asList(
-                new Channel("ARY News  ·  YouTube live", APP_ARY_YOUTUBE,
-                        "https://i.imgur.com/R4KtTbJ.jpg", null, null),
-                new Channel("PTV Sports  ·  Tamasha", APP_TAMASHA,
-                        "https://i.imgur.com/CPm6GHA.png", null, null)
+                new Channel("ARY News  ·  Live", APP_ARY_YOUTUBE,
+                        "https://i.imgur.com/R4KtTbJ.jpg", null, null)
         );
     }
 

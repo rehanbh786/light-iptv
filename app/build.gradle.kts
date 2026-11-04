@@ -10,8 +10,8 @@ android {
         applicationId = "com.lightiptv.app"
         minSdk = 21
         targetSdk = 33
-        versionCode = 3
-        versionName = "1.2"
+        versionCode = 4
+        versionName = "1.3"
     }
 
     // Same key on every GitHub build, so new versions install over old ones.

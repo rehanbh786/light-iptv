@@ -1,11 +1,8 @@
 package com.lightiptv.app;
 
 import android.app.Activity;
-import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
@@ -53,10 +50,8 @@ public class MainActivity extends Activity {
     private final ExecutorService loader = Executors.newSingleThreadExecutor();
     private final Map<String, List<Channel>> loaded = new HashMap<>();
 
-    private static final String ARY_YOUTUBE_LIVE =
-            "https://www.youtube.com/channel/UCMmpLL2ucRHAXbNHiCPyIyg/live"; // linked from arynews.tv
-    private static final String YOUTUBE_TV = "com.google.android.youtube.tv";
-    private static final String[] TAMASHA_PACKAGES = {"com.bd.tamashatv", "com.spbtv.mobilinktv"};
+    /** ARY News' official YouTube channel, as linked from arynews.tv. */
+    private static final String ARY_YOUTUBE_CHANNEL = "UCMmpLL2ucRHAXbNHiCPyIyg";
 
     private int activeIndex = 0;   // Featured
     private int pendingIndex = 0;
@@ -273,7 +268,7 @@ public class MainActivity extends Activity {
         }
         if (cat.isFeatured()) {
             showChannels(Playlist.featured());
-            subtitle.setText("Official sources  ·  these open in their own apps");
+            subtitle.setText("Official live streams");
             return;
         }
         List<Channel> cached = force ? null : loaded.get(cat.key);
@@ -361,37 +356,14 @@ public class MainActivity extends Activity {
         startActivity(i);
     }
 
-    /** Opens a featured channel in its official app. */
+    /** Featured channels play an official embedded stream inside this app. */
     private void openExternal(Channel ch) {
-        try {
-            if (Playlist.APP_ARY_YOUTUBE.equals(ch.url)) {
-                Intent yt = new Intent(Intent.ACTION_VIEW, Uri.parse(ARY_YOUTUBE_LIVE));
-                yt.setPackage(YOUTUBE_TV);
-                if (yt.resolveActivity(getPackageManager()) == null) {
-                    yt.setPackage(null); // no YouTube TV app: let any app (e.g. a browser) open it
-                }
-                startActivity(yt);
-            } else if (Playlist.APP_TAMASHA.equals(ch.url)) {
-                for (String pkg : TAMASHA_PACKAGES) {
-                    Intent launch = launchIntent(pkg);
-                    if (launch != null) {
-                        startActivity(launch);
-                        return;
-                    }
-                }
-                Toast.makeText(this, "Tamasha is not installed yet. Install it, sign in, then try again.",
-                        Toast.LENGTH_LONG).show();
-            }
-        } catch (ActivityNotFoundException e) {
-            Toast.makeText(this, "No app on this box can open " + ch.name, Toast.LENGTH_LONG).show();
+        if (Playlist.APP_ARY_YOUTUBE.equals(ch.url)) {
+            Intent i = new Intent(this, EmbedActivity.class);
+            i.putExtra(EmbedActivity.EXTRA_YOUTUBE_CHANNEL, ARY_YOUTUBE_CHANNEL);
+            i.putExtra(EmbedActivity.EXTRA_TITLE, "ARY News");
+            startActivity(i);
         }
-    }
-
-    private Intent launchIntent(String pkg) {
-        PackageManager pm = getPackageManager();
-        Intent i = pm.getLeanbackLaunchIntentForPackage(pkg);
-        if (i == null) i = pm.getLaunchIntentForPackage(pkg);
-        return i;
     }
 
     // ------------------------------------------------------------------ focus effect
