@@ -1,8 +1,11 @@
 package com.lightiptv.app;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
@@ -50,8 +53,13 @@ public class MainActivity extends Activity {
     private final ExecutorService loader = Executors.newSingleThreadExecutor();
     private final Map<String, List<Channel>> loaded = new HashMap<>();
 
-    private int activeIndex = 1;   // Pakistan
-    private int pendingIndex = 1;
+    private static final String ARY_YOUTUBE_LIVE =
+            "https://www.youtube.com/channel/UCMmpLL2ucRHAXbNHiCPyIyg/live"; // linked from arynews.tv
+    private static final String YOUTUBE_TV = "com.google.android.youtube.tv";
+    private static final String[] TAMASHA_PACKAGES = {"com.bd.tamashatv", "com.spbtv.mobilinktv"};
+
+    private int activeIndex = 0;   // Featured
+    private int pendingIndex = 0;
     private int generation;
     private boolean focusGridWhenLoaded;
     private List<Channel> shown = new ArrayList<>();
@@ -220,6 +228,11 @@ public class MainActivity extends Activity {
         grid.setOnItemLongClickListener((parent, view, position, id) -> {
             if (position < 0 || position >= shown.size()) return true;
             Channel ch = shown.get(position);
+            if (ch.url.startsWith(Playlist.APP_PREFIX)) {
+                Toast.makeText(this, "Featured channels are always on the Featured page.",
+                        Toast.LENGTH_SHORT).show();
+                return true;
+            }
             boolean fav = Favorites.toggle(this, ch);
             favoriteUrls = Favorites.urls(this);
             Toast.makeText(this, (fav ? "Added to favorites: " : "Removed from favorites: ") + ch.name,
@@ -256,6 +269,11 @@ public class MainActivity extends Activity {
 
         if (cat.isFavorites()) {
             showChannels(Favorites.list(this));
+            return;
+        }
+        if (cat.isFeatured()) {
+            showChannels(Playlist.featured());
+            subtitle.setText("Official sources  ·  these open in their own apps");
             return;
         }
         List<Channel> cached = force ? null : loaded.get(cat.key);
@@ -322,11 +340,58 @@ public class MainActivity extends Activity {
 
     private void play(int position) {
         if (position < 0 || position >= shown.size()) return;
-        Session.channels = new ArrayList<>(shown);
+        Channel chosen = shown.get(position);
+        if (chosen.url.startsWith(Playlist.APP_PREFIX)) {
+            openExternal(chosen);
+            return;
+        }
+        // The player only gets real streams; app shortcuts are left out.
+        List<Channel> playable = new ArrayList<>();
+        int index = 0;
+        for (int k = 0; k < shown.size(); k++) {
+            Channel c = shown.get(k);
+            if (c.url.startsWith(Playlist.APP_PREFIX)) continue;
+            if (k == position) index = playable.size();
+            playable.add(c);
+        }
+        Session.channels = playable;
         Session.categoryName = Playlist.CATEGORIES.get(activeIndex).title;
         Intent i = new Intent(this, PlayerActivity.class);
-        i.putExtra(PlayerActivity.EXTRA_INDEX, position);
+        i.putExtra(PlayerActivity.EXTRA_INDEX, index);
         startActivity(i);
+    }
+
+    /** Opens a featured channel in its official app. */
+    private void openExternal(Channel ch) {
+        try {
+            if (Playlist.APP_ARY_YOUTUBE.equals(ch.url)) {
+                Intent yt = new Intent(Intent.ACTION_VIEW, Uri.parse(ARY_YOUTUBE_LIVE));
+                yt.setPackage(YOUTUBE_TV);
+                if (yt.resolveActivity(getPackageManager()) == null) {
+                    yt.setPackage(null); // no YouTube TV app: let any app (e.g. a browser) open it
+                }
+                startActivity(yt);
+            } else if (Playlist.APP_TAMASHA.equals(ch.url)) {
+                for (String pkg : TAMASHA_PACKAGES) {
+                    Intent launch = launchIntent(pkg);
+                    if (launch != null) {
+                        startActivity(launch);
+                        return;
+                    }
+                }
+                Toast.makeText(this, "Tamasha is not installed yet. Install it, sign in, then try again.",
+                        Toast.LENGTH_LONG).show();
+            }
+        } catch (ActivityNotFoundException e) {
+            Toast.makeText(this, "No app on this box can open " + ch.name, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private Intent launchIntent(String pkg) {
+        PackageManager pm = getPackageManager();
+        Intent i = pm.getLeanbackLaunchIntentForPackage(pkg);
+        if (i == null) i = pm.getLaunchIntentForPackage(pkg);
+        return i;
     }
 
     // ------------------------------------------------------------------ focus effect

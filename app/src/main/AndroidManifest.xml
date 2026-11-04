@@ -3,6 +3,17 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- Apps the Featured cards hand off to (needed on Android 11+). -->
+    <queries>
+        <package android:name="com.google.android.youtube.tv" />
+        <package android:name="com.bd.tamashatv" />
+        <package android:name="com.spbtv.mobilinktv" />
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+    </queries>
+
     <uses-feature
         android:name="android.software.leanback"
         android:required="false" />

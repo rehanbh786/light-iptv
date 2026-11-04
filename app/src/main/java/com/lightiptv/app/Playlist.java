@@ -29,12 +29,18 @@ public final class Playlist {
     private static final long MAX_AGE_MS = 24L * 60 * 60 * 1000;
 
     public static final String FAVORITES_KEY = "favorites";
+    public static final String FEATURED_KEY = "featured";
+
+    /** Channels that open in their official app instead of the built-in player. */
+    public static final String APP_PREFIX = "app:";
+    public static final String APP_ARY_YOUTUBE = "app:ary-youtube";
+    public static final String APP_TAMASHA = "app:tamasha";
 
     /** A category shown in the sidebar. */
     public static final class Category {
         public final String key;
         public final String title;
-        final String path; // null for favorites
+        final String path; // null for favorites and featured
 
         Category(String key, String title, String path) {
             this.key = key;
@@ -43,12 +49,27 @@ public final class Playlist {
         }
 
         public boolean isFavorites() {
-            return path == null;
+            return FAVORITES_KEY.equals(key);
         }
+
+        public boolean isFeatured() {
+            return FEATURED_KEY.equals(key);
+        }
+    }
+
+    /** Official sources for channels whose free-list links don't work. */
+    public static List<Channel> featured() {
+        return Arrays.asList(
+                new Channel("ARY News  ·  YouTube live", APP_ARY_YOUTUBE,
+                        "https://i.imgur.com/R4KtTbJ.jpg", null, null),
+                new Channel("PTV Sports  ·  Tamasha", APP_TAMASHA,
+                        "https://i.imgur.com/CPm6GHA.png", null, null)
+        );
     }
 
     /** Sidebar order. Adult content is deliberately not included. */
     public static final List<Category> CATEGORIES = Arrays.asList(
+            new Category(FEATURED_KEY, "Featured", null),
             new Category(FAVORITES_KEY, "Favorites", null),
             new Category("pk", "Pakistan", "countries/pk.m3u"),
             new Category("news", "News", "categories/news.m3u"),
