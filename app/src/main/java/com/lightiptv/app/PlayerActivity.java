@@ -97,7 +97,11 @@ public class PlayerActivity extends Activity {
         info = new TextView(this);
         info.setTextColor(Color.WHITE);
         info.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
-        info.setBackgroundColor(Color.parseColor("#CC10141F"));
+        android.graphics.drawable.GradientDrawable infoBg = new android.graphics.drawable.GradientDrawable();
+        infoBg.setColor(Color.parseColor("#E60B0F17"));
+        infoBg.setCornerRadius(dp(12));
+        infoBg.setStroke(dp(2), Color.parseColor("#4D8DFF"));
+        info.setBackground(infoBg);
         info.setPadding(dp(20), dp(12), dp(20), dp(12));
         FrameLayout.LayoutParams infoLp = new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -294,7 +298,7 @@ public class PlayerActivity extends Activity {
     public boolean onKeyLongPress(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER || keyCode == KeyEvent.KEYCODE_ENTER) {
             Channel ch = channels.get(index);
-            boolean fav = Favorites.toggle(this, ch.url);
+            boolean fav = Favorites.toggle(this, ch);
             Toast.makeText(this, (fav ? "Added to favorites: " : "Removed from favorites: ") + ch.name,
                     Toast.LENGTH_SHORT).show();
             return true;

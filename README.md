@@ -2,9 +2,10 @@
 
 A small Android TV app for free, publicly listed channels, grouped by category.
 
-- Channels come from the community-maintained [iptv-org](https://github.com/iptv-org/iptv) lists:
-  `index.category.m3u` (all categories) and `countries/pk.m3u` (shown as a "Pakistan" category).
-- Lists are cached for 24 hours. Choose **Update channel list** to refresh.
+- Channels come from the community-maintained [iptv-org](https://github.com/iptv-org/iptv) lists,
+  one file per category (`categories/news.m3u`, `categories/sports.m3u`, ...) plus `countries/pk.m3u`.
+- A category downloads only when opened and is cached for 24 hours. Choose **Update lists** to refresh.
+- Channel logos are shrunk to card size and cached on disk.
 - Some streams are offline or geo-blocked at any given time. That is the source, not the app.
 - No accounts, no ads, no analytics.
 

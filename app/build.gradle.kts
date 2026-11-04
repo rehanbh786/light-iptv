@@ -10,8 +10,18 @@ android {
         applicationId = "com.lightiptv.app"
         minSdk = 21
         targetSdk = 33
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
+    }
+
+    // Same key on every GitHub build, so new versions install over old ones.
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
     }
 
     // Plain Java + Media3, no native libraries: one APK runs on
